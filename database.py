@@ -23,7 +23,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # 6. Clase base para los modelos
 Base = declarative_base()
 
-# 7. Dependencia para inyectar la base de datos en las rutas de FastAPI
+# 7. Dependencia para inyectar la base de datos en las rutas de FastAPI hola
 def get_db():
     db = SessionLocal()
     try:
