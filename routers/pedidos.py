@@ -20,7 +20,7 @@ cloudinary.config(secure=True)
 # Configuración de la Inteligencia Artificial
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 # Usamos el modelo Flash que es rapidísimo y muy barato/gratis
-modelo_ia = genai.GenerativeModel('gemini-1.5-flash-latest') 
+modelo_ia = genai.GenerativeModel('gemini-2.5-flash') 
 
 router = APIRouter(
     prefix="/pedidos",
