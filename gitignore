@@ -19,3 +19,5 @@ __pycache__/
 # Archivos del sistema operativo (Mac/Windows)
 .DS_Store
 Thumbs.db
+
+.env
