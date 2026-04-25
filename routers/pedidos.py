@@ -58,6 +58,47 @@ async def analizar_ticket(foto: UploadFile = File(...)):
         # Si la IA falla, devolvemos vacío para no bloquear a la vendedora
         return {"numero_ticket": "", "detalles": ""}
 
+@router.post("/leer-traspaso")
+async def leer_traspaso(foto: UploadFile = File(...)):
+    try:
+        # Leemos la imagen en memoria para pasársela a la IA
+        contents = await foto.read()
+        img = Image.open(io.BytesIO(contents))
+ 
+        # Le damos instrucciones precisas a la IA — DIFERENTES a las del ticket
+        prompt = """
+        Eres un asistente que lee notas escritas a mano por la dueña de una empresa de aceros en México.
+        Estas notas son para mover material entre sucursales (traspasos de inventario internos).
+ 
+        Transcribe LITERALMENTE TODO el texto que veas en la imagen, sin omitir nada.
+        Reglas:
+        - Conserva las medidas exactas tal como aparecen (1/2", 3/4, 1.5", calibre 14, 3 metros, etc.).
+        - Conserva las cantidades tal como están escritas (50 pzs, 3 hojas, 2 rollos, 1 ton, etc.).
+        - Si hay listas, una línea por ítem.
+        - Si una palabra o número es ilegible, escribe [ilegible] en su lugar. NO inventes datos.
+        - NO agregues encabezados, comentarios ni explicaciones de tu parte.
+        - Devuelve SOLO el contenido de la nota, sin preámbulos.
+ 
+        Si la imagen no contiene texto legible, responde EXACTAMENTE: NO_TEXTO_LEGIBLE
+        """
+ 
+        respuesta = modelo_ia.generate_content([prompt, img])
+        texto = respuesta.text.strip()
+ 
+        # Regresamos el puntero del archivo a 0 por si acaso
+        await foto.seek(0)
+ 
+        # Si la IA dijo que no hay texto legible, devolvemos vacío
+        if texto == "NO_TEXTO_LEGIBLE":
+            return {"texto": ""}
+ 
+        return {"texto": texto}
+ 
+    except Exception as e:
+        print(f"Error de IA traspaso: {e}")  # Lo verás en la terminal de Uvicorn / logs de Railway
+        # Si la IA falla, devolvemos vacío para no bloquear a la dueña
+        return {"texto": ""}
+
 # 1. CREAR PEDIDO (Actualizado con numero_ticket)
 @router.post("/", response_model=schemas.Pedido)
 async def crear_pedido(
